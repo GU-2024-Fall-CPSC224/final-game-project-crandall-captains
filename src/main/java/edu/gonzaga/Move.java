@@ -1,5 +1,5 @@
 package edu.gonzaga;
 
-public class Move {
+public class Move extends Square{
     
 }
