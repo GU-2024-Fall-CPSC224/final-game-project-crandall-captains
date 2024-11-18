@@ -14,7 +14,7 @@ package edu.gonzaga;
 
 
 /** Main program class for launching your team's program. */
-public class MainGame {
+public class GameLaunch {
     public static void main(String[] args) {
         System.out.println("Hello Team Game");
 
