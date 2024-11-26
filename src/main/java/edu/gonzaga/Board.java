@@ -11,6 +11,9 @@ public class Board extends JPanel {
     private ArrayList<JButton> buttons; // Board tiles
     private JLabel statusLabel;        // Status display
     private Piece[][] board;           // Holds all pieces
+    private Piece selectedPiece = null; // Track the currently selected piece
+    private int selectedRow = -1;
+    private int selectedCol = -1;
 
     public Board() {
         // Use BorderLayout for the main panel
@@ -24,6 +27,13 @@ public class Board extends JPanel {
         this.add(statusLabel, BorderLayout.NORTH);
         this.add(createButtonPanel(), BorderLayout.CENTER);
     }
+
+    public Piece getPiece(int row, int col) {
+        if (row < 0 || row >= 8 || col < 0 || col >= 8) {
+            return null; // Out of bounds
+        }
+        return board[row][col];
+    }    
 
     // Initialize pieces on the board
     private void initializePieces() {
@@ -43,10 +53,6 @@ public class Board extends JPanel {
 
         for (int row = 0; row < 8; row++) {
             for (int col = 0; col < 8; col++) {
-                char columnLabel = (char) ('A' + col); // A-H
-                int rowLabel = 8 - row;               // 1-8
-                String positionLabel = columnLabel + String.valueOf(rowLabel);
-
                 JButton button = new JButton();
 
                 // Set alternating colors for chessboard pattern
@@ -63,17 +69,9 @@ public class Board extends JPanel {
                     button.setText(board[row][col].getSymbol()); // Use the Unicode symbol
                     button.setFont(new Font("Serif", Font.BOLD, 36)); // Large and bold font
                     button.setForeground(board[row][col].getColor().equalsIgnoreCase("White") ? Color.WHITE : Color.BLACK);
-                    button.setHorizontalAlignment(SwingConstants.CENTER);
-                    button.setVerticalAlignment(SwingConstants.CENTER);
-                } else {
-                    // Default to showing the tile's position label
-                    button.setText(positionLabel);
-                    button.setFont(new Font("Arial", Font.PLAIN, 12));
-                    button.setHorizontalAlignment(SwingConstants.CENTER);
-                    button.setVerticalAlignment(SwingConstants.CENTER);
                 }
 
-                button.addActionListener(new ButtonClickListener(positionLabel));
+                button.addActionListener(new ButtonClickListener(row, col));
                 buttons.add(button);
                 buttonPanel.add(button);
             }
@@ -82,16 +80,65 @@ public class Board extends JPanel {
         return buttonPanel;
     }
 
-    private class ButtonClickListener implements ActionListener {
-        private final String positionLabel;
+    // Refresh the board UI after a move
+    private void updateBoardUI() {
+        for (int row = 0; row < 8; row++) {
+            for (int col = 0; col < 8; col++) {
+                JButton button = buttons.get(row * 8 + col);
+                Piece piece = board[row][col];
 
-        public ButtonClickListener(String positionLabel) {
-            this.positionLabel = positionLabel;
+                if (piece != null) {
+                    button.setText(piece.getSymbol());
+                    button.setForeground(piece.getColor().equalsIgnoreCase("White") ? Color.WHITE : Color.BLACK);
+                } else {
+                    button.setText("");
+                }
+            }
+        }
+    }
+
+    private class ButtonClickListener implements ActionListener {
+        private final int row;
+        private final int col;
+
+        public ButtonClickListener(int row, int col) {
+            this.row = row;
+            this.col = col;
         }
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            statusLabel.setText("You Clicked: " + positionLabel);
+            if (selectedPiece == null) {
+                // Select a piece
+                Piece piece = getPiece(row, col);
+                if (piece != null) {
+                    selectedPiece = piece;
+                    selectedRow = row;
+                    selectedCol = col;
+                    statusLabel.setText("Selected: " + piece.getSymbol() + " at " + (char) ('A' + col) + (8 - row));
+                } else {
+                    statusLabel.setText("No piece selected.");
+                }
+            } else {
+                // Try to move the piece
+                if (selectedPiece.isValidMove(row, col, Board.this)) {
+                    // Move the piece
+                    board[row][col] = selectedPiece;
+                    board[selectedRow][selectedCol] = null;
+                    selectedPiece.setPosition(row, col);
+
+                    // Update UI
+                    updateBoardUI();
+                    statusLabel.setText("Moved to " + (char) ('A' + col) + (8 - row));
+
+                    // Clear selection
+                    selectedPiece = null;
+                    selectedRow = -1;
+                    selectedCol = -1;
+                } else {
+                    statusLabel.setText("Invalid move. Try again.");
+                }
+            }
         }
     }
 }
