@@ -1,32 +1,38 @@
 package edu.gonzaga;
+
 import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.ArrayList;
 
 public abstract class Piece {
-    private String color;
-    private int row;
-    private int col; 
+    private String color; // Piece color (White or Black)
+    private int row;      // Row position
+    private int col;      // Column position
 
     public Piece(String color, int row, int col) {
         this.color = color;
         this.row = row;
         this.col = col;
     }
+
     public String getColor() {
         return color;
     }
+
     public int getRow() {
         return row;
     }
+
     public int getCol() {
-        return col; 
+        return col;
     }
+
     public void setPosition(int row, int col) {
         this.row = row;
         this.col = col;
     }
+
+    // Abstract method for validating moves (to be implemented by subclasses)
     public abstract boolean isValidMove(int destRow, int destCol, Board board);
+
+    // Abstract method to retrieve the Unicode symbol for the piece
+    public abstract String getSymbol();
 }

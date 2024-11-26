@@ -1,33 +1,21 @@
-/*
- * Final project main driver class
- * 
- * 
- * Project Description:
- * 
- * 
- * Contributors:
- * 
- * 
- * Copyright: 2023
- */
 package edu.gonzaga;
+
 import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.ArrayList;
 
-
-/** Main program class for launching your team's program. */
 public class GameLaunch {
     public static void main(String[] args) {
-        System.out.println("Hello Team Game");
-        JFrame frame = new JFrame("Examle Board");
-        Board board = new Board();
-        frame.add(board);
-        frame.setSize(600,600);
-        frame.setVisible(true);
+        SwingUtilities.invokeLater(() -> {
+            // Create the main game window
+            JFrame frame = new JFrame("Chess Game");
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            frame.setSize(600, 600); // Adjust the size as needed
 
-        // Your code here. Good luck!
+            // Add the chessboard (Board panel) to the frame
+            Board chessBoard = new Board();
+            frame.add(chessBoard);
+
+            // Make the frame visible
+            frame.setVisible(true);
+        });
     }
 }
