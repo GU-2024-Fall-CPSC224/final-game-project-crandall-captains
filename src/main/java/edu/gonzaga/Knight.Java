@@ -19,6 +19,6 @@ public class Knight extends Piece {
 
     @Override
     public String getSymbol() {
-        return getColor().equalsIgnoreCase("White") ? "\u2658" : "\u265E"; // white knight♘ black knight♞
+        return getColor().equalsIgnoreCase("White") ? "\u2658" : "\u265E"; // White knight♘ black knight♞
     }
 }
