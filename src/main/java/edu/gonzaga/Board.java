@@ -38,12 +38,22 @@ public class Board extends JPanel {
     // Initialize pieces on the board
     private void initializePieces() {
         // Place white bishops
-        board[7][2] = new Bishop("Black", 7, 2); // C1
+        board[7][2] = new Bishop("White", 7, 2); // C1
         board[7][5] = new Bishop("White", 7, 5); // F1
 
         // Place black bishops
-        board[0][2] = new Bishop("White", 0, 2); // C8
+        board[0][2] = new Bishop("Black", 0, 2); // C8
         board[0][5] = new Bishop("Black", 0, 5); // F8
+
+        // Place white pawns
+        for (int col = 0; col < 8; col++) {
+            board[6][col] = new Pawn("White", 6, col);
+        }
+
+        // Place black pawns
+        for (int col = 0; col < 8; col++) {
+            board[1][col] = new Pawn("Black", 1, col);
+        }
     }
 
     // Create the chessboard UI
@@ -57,11 +67,11 @@ public class Board extends JPanel {
 
                 // Set alternating colors for chessboard pattern
                 if ((row + col) % 2 == 0) {
-                    button.setBackground(Color.BLACK);
-                    button.setForeground(Color.WHITE);
+                    button.setBackground(new Color(139, 69, 19));
+                    button.setForeground(Color.CYAN);
                 } else {
-                    button.setBackground(Color.WHITE);
-                    button.setForeground(Color.BLACK);
+                    button.setBackground(new Color(222, 184, 135));
+                    button.setForeground(Color.GREEN);
                 }
 
                 // Render the piece if there is one on this tile
@@ -89,6 +99,7 @@ public class Board extends JPanel {
 
                 if (piece != null) {
                     button.setText(piece.getSymbol());
+                    button.setFont(new Font("Serif", Font.BOLD, 36)); // Reapply font
                     button.setForeground(piece.getColor().equalsIgnoreCase("White") ? Color.WHITE : Color.BLACK);
                 } else {
                     button.setText("");
@@ -100,12 +111,12 @@ public class Board extends JPanel {
     private class ButtonClickListener implements ActionListener {
         private final int row;
         private final int col;
-
+    
         public ButtonClickListener(int row, int col) {
             this.row = row;
             this.col = col;
         }
-
+    
         @Override
         public void actionPerformed(ActionEvent e) {
             if (selectedPiece == null) {
@@ -126,19 +137,20 @@ public class Board extends JPanel {
                     board[row][col] = selectedPiece;
                     board[selectedRow][selectedCol] = null;
                     selectedPiece.setPosition(row, col);
-
+    
                     // Update UI
                     updateBoardUI();
                     statusLabel.setText("Moved to " + (char) ('A' + col) + (8 - row));
-
-                    // Clear selection
-                    selectedPiece = null;
-                    selectedRow = -1;
-                    selectedCol = -1;
                 } else {
                     statusLabel.setText("Invalid move. Try again.");
                 }
+    
+                // Clear selection in either case
+                selectedPiece = null;
+                selectedRow = -1;
+                selectedCol = -1;
             }
         }
     }
+    
 }
