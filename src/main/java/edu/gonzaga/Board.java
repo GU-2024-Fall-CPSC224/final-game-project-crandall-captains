@@ -45,6 +45,27 @@ public class Board extends JPanel {
         board[0][2] = new Bishop("Black", 0, 2); // C8
         board[0][5] = new Bishop("Black", 0, 5); // F8
 
+        // Place knights
+        board[0][1] = new Knight("Black", 0, 1);
+        board[0][6] = new Knight("Black", 0, 6);
+        board[7][1] = new Knight("White", 7, 1);
+        board[7][6] = new Knight("White", 7, 6);
+
+        // Place rooks
+        board[0][0] = new Rook("Black", 0, 0);
+        board[0][7] = new Rook("Black", 0, 7);
+        board[7][0] = new Rook("White", 7, 0);
+        board[7][7] = new Rook("White", 7, 7);
+
+
+        // Place queens
+        board[0][3] = new Queen("Black", 0, 3);
+        board[7][3] = new Queen("White", 7, 3);
+
+        // Place kings
+        board[0][4] = new King("Black", 0, 4);
+        board[7][4] = new King("White", 7, 4);
+
         // Place white pawns
         for (int col = 0; col < 8; col++) {
             board[6][col] = new Pawn("White", 6, col);

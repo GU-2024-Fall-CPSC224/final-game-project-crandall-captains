@@ -2,7 +2,7 @@ package edu.gonzaga;
 
 public class Bishop extends Piece {
 
-    // Constructor for Bishop
+    // constructor for Bishop
     public Bishop(String color, int row, int col) {
         super(color, row, col);
     }
@@ -10,17 +10,17 @@ public class Bishop extends Piece {
     // Implementing the abstract isValidMove method
     @Override
     public boolean isValidMove(int destRow, int destCol, Board board) {
-        // Your existing isValidMove logic
+        // previos existing isValidMove logic
         int rowDiff = Math.abs(destRow - getRow());
         int colDiff = Math.abs(destCol - getCol());
         
-        // Ensure the destination is within board bounds
+        // make sure bishop is placed where it can go
         if (destRow < 0 || destRow >= 8 || destCol < 0 || destCol >= 8) {
             return false; // Destination is out of bounds
         }
         
         if (rowDiff != colDiff) {
-            return false; // Not a diagonal move
+            return false; // if not a diagonal move
         }
         
         // Check if the path is clear
@@ -31,7 +31,7 @@ public class Bishop extends Piece {
         
         while (currentRow != destRow && currentCol != destCol) {
             if (board.getPiece(currentRow, currentCol) != null) {
-                return false; // Path is obstructed
+                return false; // if path is obstructed
             }
             currentRow += rowDirection;
             currentCol += colDirection;
