@@ -80,7 +80,7 @@ public class Board extends JPanel {
     // Create the chessboard UI
     private JPanel createButtonPanel() {
         JPanel buttonPanel = new JPanel();
-        buttonPanel.setLayout(new GridLayout(8, 8)); // 8x8 chess grid
+        buttonPanel.setLayout(new GridLayout(8, 8)); /// 8x8 chess grid
 
         for (int row = 0; row < 8; row++) {
             for (int col = 0; col < 8; col++) {
