@@ -7,15 +7,16 @@ public class King extends Piece {
     }
 
     @Override
-    public boolean isValidMove(int destRow, int destCol, Board board) {
+    public boolean isValidMove(int destRow, int destCol, LogBoard board) {
         int rowDiff = Math.abs(destRow - getRow());
         int colDiff = Math.abs(destCol - getCol());
-
+    
         // King moves one square in any direction
+        Piece destPiece = board.getSquare(destRow, destCol).getPiece();
         return (rowDiff <= 1 && colDiff <= 1) &&
-               (board.getPiece(destRow, destCol) == null ||
-                !board.getPiece(destRow, destCol).getColor().equalsIgnoreCase(getColor()));
+               (destPiece == null || !destPiece.getColor().equalsIgnoreCase(getColor()));
     }
+    
 
     @Override
     public String getSymbol() {

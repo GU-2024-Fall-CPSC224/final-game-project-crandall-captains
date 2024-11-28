@@ -12,12 +12,12 @@ public class Pawn extends Piece {
     }
 
     @Override
-    public boolean isValidMove(int destRow, int destCol, Board board) {
+    public boolean isValidMove(int destRow, int destCol, LogBoard board) {
         int direction = getColor().equalsIgnoreCase("White") ? -1 : 1; // White moves up, Black moves down
         int rowDiff = destRow - getRow();
         int colDiff = destCol - getCol();
 
-        Piece destPiece = board.getPiece(destRow, destCol);
+        Piece destPiece = board.getSquare(destRow, destCol).getPiece();
 
         // Move forward
         if (colDiff == 0 && destPiece == null) {
@@ -28,7 +28,7 @@ public class Pawn extends Piece {
             // Double step from starting position
             if ((getRow() == 1 && getColor().equalsIgnoreCase("Black") && rowDiff == 2 * direction) ||
                 (getRow() == 6 && getColor().equalsIgnoreCase("White") && rowDiff == 2 * direction)) {
-                return board.getPiece(getRow() + direction, getCol()) == null; // Ensure no blocking
+                return board.getSquare(getRow() + direction, getCol()).getPiece() == null; // Ensure no blocking
             }
         }
 

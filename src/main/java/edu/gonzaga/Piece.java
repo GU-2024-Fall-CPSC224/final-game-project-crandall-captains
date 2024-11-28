@@ -31,7 +31,7 @@ public abstract class Piece {
     }
 
     // Abstract method for validating moves (to be implemented by subclasses)
-    public abstract boolean isValidMove(int destRow, int destCol, Board board);
+    public abstract boolean isValidMove(int destRow, int destCol, LogBoard board);
 
     // Abstract method to retrieve the Unicode symbol for the piece
     public abstract String getSymbol();

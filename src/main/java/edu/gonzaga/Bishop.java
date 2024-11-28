@@ -9,39 +9,27 @@ public class Bishop extends Piece {
 
     // Implementing the abstract isValidMove method
     @Override
-    public boolean isValidMove(int destRow, int destCol, Board board) {
-        // previos existing isValidMove logic
-        int rowDiff = Math.abs(destRow - getRow());
-        int colDiff = Math.abs(destCol - getCol());
-        
-        // make sure bishop is placed where it can go
-        if (destRow < 0 || destRow >= 8 || destCol < 0 || destCol >= 8) {
-            return false; // Destination is out of bounds
-        }
-        
-        if (rowDiff != colDiff) {
-            return false; // if not a diagonal move
-        }
-        
+    public boolean isValidMove(int destRow, int destCol, LogBoard board) {
         // Check if the path is clear
         int rowDirection = (destRow > getRow()) ? 1 : -1;
         int colDirection = (destCol > getCol()) ? 1 : -1;
         int currentRow = getRow() + rowDirection;
         int currentCol = getCol() + colDirection;
-        
+    
         while (currentRow != destRow && currentCol != destCol) {
-            if (board.getPiece(currentRow, currentCol) != null) {
-                return false; // if path is obstructed
+            // Use getSquare to retrieve the Square, then getPiece
+            if (board.getSquare(currentRow, currentCol).getPiece() != null) {
+                return false; // Path is obstructed
             }
             currentRow += rowDirection;
             currentCol += colDirection;
         }
-        
+    
         // Check the destination square
-        Piece destPiece = board.getPiece(destRow, destCol);
+        Piece destPiece = board.getSquare(destRow, destCol).getPiece();
         return destPiece == null || !destPiece.getColor().equalsIgnoreCase(getColor());
     }
-
+    
     // Implementing the abstract getSymbol method
     @Override
     public String getSymbol() {

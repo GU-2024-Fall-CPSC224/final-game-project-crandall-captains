@@ -4,83 +4,31 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
 
 public class Board extends JPanel {
 
-    private ArrayList<JButton> buttons; // Board tiles
-    private JLabel statusLabel;        // Status display
-    private Piece[][] board;           // Holds all pieces
-    private Piece selectedPiece = null; // Track the currently selected piece
+    private LogBoard logicalBoard; // Logical board representation
+    private JLabel statusLabel;   // Status display
+    private JButton[][] buttons;  // 8x8 grid of UI buttons
+    private Piece selectedPiece = null;
     private int selectedRow = -1;
     private int selectedCol = -1;
 
     public Board() {
-        // Use BorderLayout for the main panel
-        this.setLayout(new BorderLayout());
+        logicalBoard = new LogBoard();
+        logicalBoard.setupBoard(); // Initialize logical board with pieces
 
-        buttons = new ArrayList<>();
-        board = new Piece[8][8]; // Create an 8x8 chessboard
+        setLayout(new BorderLayout());
         statusLabel = new JLabel("Game On", SwingConstants.CENTER);
+        buttons = new JButton[8][8];
 
-        initializePieces(); // Place the bishops on the board
-        this.add(statusLabel, BorderLayout.NORTH);
-        this.add(createButtonPanel(), BorderLayout.CENTER);
-    }
-
-    public Piece getPiece(int row, int col) {
-        if (row < 0 || row >= 8 || col < 0 || col >= 8) {
-            return null; // Out of bounds
-        }
-        return board[row][col];
-    }    
-
-    // Initialize pieces on the board
-    private void initializePieces() {
-        // Place white bishops
-        board[7][2] = new Bishop("White", 7, 2); // C1
-        board[7][5] = new Bishop("White", 7, 5); // F1
-
-        // Place black bishops
-        board[0][2] = new Bishop("Black", 0, 2); // C8
-        board[0][5] = new Bishop("Black", 0, 5); // F8
-
-        // Place knights
-        board[0][1] = new Knight("Black", 0, 1);
-        board[0][6] = new Knight("Black", 0, 6);
-        board[7][1] = new Knight("White", 7, 1);
-        board[7][6] = new Knight("White", 7, 6);
-
-        // Place rooks
-        board[0][0] = new Rook("Black", 0, 0);
-        board[0][7] = new Rook("Black", 0, 7);
-        board[7][0] = new Rook("White", 7, 0);
-        board[7][7] = new Rook("White", 7, 7);
-
-
-        // Place queens
-        board[0][3] = new Queen("Black", 0, 3);
-        board[7][3] = new Queen("White", 7, 3);
-
-        // Place kings
-        board[0][4] = new King("Black", 0, 4);
-        board[7][4] = new King("White", 7, 4);
-
-        // Place white pawns
-        for (int col = 0; col < 8; col++) {
-            board[6][col] = new Pawn("White", 6, col);
-        }
-
-        // Place black pawns
-        for (int col = 0; col < 8; col++) {
-            board[1][col] = new Pawn("Black", 1, col);
-        }
+        add(statusLabel, BorderLayout.NORTH);
+        add(createButtonPanel(), BorderLayout.CENTER);
     }
 
     // Create the chessboard UI
     private JPanel createButtonPanel() {
-        JPanel buttonPanel = new JPanel();
-        buttonPanel.setLayout(new GridLayout(8, 8)); /// 8x8 chess grid
+        JPanel buttonPanel = new JPanel(new GridLayout(8, 8));
 
         for (int row = 0; row < 8; row++) {
             for (int col = 0; col < 8; col++) {
@@ -88,22 +36,22 @@ public class Board extends JPanel {
 
                 // Set alternating colors for chessboard pattern
                 if ((row + col) % 2 == 0) {
-                    button.setBackground(new Color(139, 69, 19));
-                    button.setForeground(Color.CYAN);
+                    button.setBackground(new Color(139, 69, 19)); // Dark brown
                 } else {
-                    button.setBackground(new Color(222, 184, 135));
-                    button.setForeground(Color.GREEN);
+                    button.setBackground(new Color(222, 184, 135)); // Light beige
                 }
 
-                // Render the piece if there is one on this tile
-                if (board[row][col] != null) {
-                    button.setText(board[row][col].getSymbol()); // Use the Unicode symbol
+                // Get the piece from LogBoard for this square
+                Square square = logicalBoard.getSquare(row, col);
+                Piece piece = square.getPiece();
+                if (piece != null) {
+                    button.setText(piece.getSymbol()); // Unicode symbol
                     button.setFont(new Font("Serif", Font.BOLD, 36)); // Large and bold font
-                    button.setForeground(board[row][col].getColor().equalsIgnoreCase("White") ? Color.WHITE : Color.BLACK);
+                    button.setForeground(piece.getColor().equalsIgnoreCase("White") ? Color.WHITE : Color.BLACK);
                 }
 
                 button.addActionListener(new ButtonClickListener(row, col));
-                buttons.add(button);
+                buttons[row][col] = button;
                 buttonPanel.add(button);
             }
         }
@@ -115,8 +63,9 @@ public class Board extends JPanel {
     private void updateBoardUI() {
         for (int row = 0; row < 8; row++) {
             for (int col = 0; col < 8; col++) {
-                JButton button = buttons.get(row * 8 + col);
-                Piece piece = board[row][col];
+                JButton button = buttons[row][col];
+                Square square = logicalBoard.getSquare(row, col);
+                Piece piece = square.getPiece();
 
                 if (piece != null) {
                     button.setText(piece.getSymbol());
@@ -132,46 +81,45 @@ public class Board extends JPanel {
     private class ButtonClickListener implements ActionListener {
         private final int row;
         private final int col;
-    
+
         public ButtonClickListener(int row, int col) {
             this.row = row;
             this.col = col;
         }
-    
+
         @Override
         public void actionPerformed(ActionEvent e) {
+            Square clickedSquare = logicalBoard.getSquare(row, col);
+            Piece clickedPiece = clickedSquare.getPiece();
+
             if (selectedPiece == null) {
                 // Select a piece
-                Piece piece = getPiece(row, col);
-                if (piece != null) {
-                    selectedPiece = piece;
+                if (clickedPiece != null) {
+                    selectedPiece = clickedPiece;
                     selectedRow = row;
                     selectedCol = col;
-                    statusLabel.setText("Selected: " + piece.getSymbol() + " at " + (char) ('A' + col) + (8 - row));
+                    statusLabel.setText("Selected: " + clickedPiece.getSymbol());
                 } else {
-                    statusLabel.setText("No piece selected.");
+                    statusLabel.setText("Empty square selected.");
                 }
             } else {
-                // Try to move the piece
-                if (selectedPiece.isValidMove(row, col, Board.this)) {
-                    // Move the piece
-                    board[row][col] = selectedPiece;
-                    board[selectedRow][selectedCol] = null;
+                // Attempt to move the selected piece
+                if (selectedPiece.isValidMove(row, col, logicalBoard)) {
+                    // Update LogBoard
+                    logicalBoard.getSquare(row, col).setPiece(selectedPiece);
+                    logicalBoard.getSquare(selectedRow, selectedCol).setPiece(null);
                     selectedPiece.setPosition(row, col);
-    
+
                     // Update UI
                     updateBoardUI();
                     statusLabel.setText("Moved to " + (char) ('A' + col) + (8 - row));
                 } else {
                     statusLabel.setText("Invalid move. Try again.");
                 }
-    
-                // Clear selection in either case
+
+                // Clear selection
                 selectedPiece = null;
-                selectedRow = -1;
-                selectedCol = -1;
             }
         }
     }
-    
 }

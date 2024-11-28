@@ -7,32 +7,34 @@ public class Rook extends Piece {
     }
 
     @Override
-    public boolean isValidMove(int destRow, int destCol, Board board) {
-        // Rook moves only vertically/horizontally 
+    public boolean isValidMove(int destRow, int destCol, LogBoard board) {
+        // Rook moves only vertically or horizontally
         if (destRow == getRow() || destCol == getCol()) {
             int rowDirection = Integer.compare(destRow, getRow());
             int colDirection = Integer.compare(destCol, getCol());
             int currentRow = getRow() + rowDirection;
             int currentCol = getCol() + colDirection;
 
+            // Check all squares along the path
             while (currentRow != destRow || currentCol != destCol) {
-                if (board.getPiece(currentRow, currentCol) != null) {
-                    return false; // if path is obstructed
+                // Use board.getSquare to get the Square, then check if it contains a piece
+                if (board.getSquare(currentRow, currentCol).getPiece() != null) {
+                    return false; // Path is obstructed
                 }
                 currentRow += rowDirection;
                 currentCol += colDirection;
             }
 
-            // Check destination square
-            Piece destPiece = board.getPiece(destRow, destCol);
+            // Check the destination square
+            Piece destPiece = board.getSquare(destRow, destCol).getPiece();
             return destPiece == null || !destPiece.getColor().equalsIgnoreCase(getColor());
         }
 
-        return false;
+        return false; // Not a valid rook move
     }
 
     @Override
     public String getSymbol() {
-        return getColor().equalsIgnoreCase("White") ? "\u2656" : "\u265C"; // white and black rooks
+        return getColor().equalsIgnoreCase("White") ? "\u2656" : "\u265C"; // ♖ for white, ♜ for black
     }
 }
