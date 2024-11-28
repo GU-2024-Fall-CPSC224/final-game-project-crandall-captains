@@ -33,7 +33,7 @@ public class Board extends JPanel {
             return null; // Out of bounds
         }
         return board[row][col];
-    }    
+    }
 
     // Initialize pieces on the board
     private void initializePieces() {
@@ -129,15 +129,34 @@ public class Board extends JPanel {
         }
     }
 
+
+
+    public boolean isSquareUnderAttack(int row, int col, boolean isWhite) {
+        //loop through every square on the board
+        for (int r = 0; r < 8; r++) {
+            for (int c = 0; c < 8; c++) {
+                Piece piece = board[r][c]; //Get the piece at the current square
+                // if there is a piece and it belongs to the opponent
+                if (piece != null && piece.getColor().equalsIgnoreCase(isWhite ? "White" : "Black")) {
+                    //check if this piece can move to target square
+                    if (piece.isValidMove(row, col, this)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
     private class ButtonClickListener implements ActionListener {
         private final int row;
         private final int col;
-    
+
         public ButtonClickListener(int row, int col) {
             this.row = row;
             this.col = col;
         }
-    
+
         @Override
         public void actionPerformed(ActionEvent e) {
             if (selectedPiece == null) {
@@ -158,14 +177,14 @@ public class Board extends JPanel {
                     board[row][col] = selectedPiece;
                     board[selectedRow][selectedCol] = null;
                     selectedPiece.setPosition(row, col);
-    
+
                     // Update UI
                     updateBoardUI();
                     statusLabel.setText("Moved to " + (char) ('A' + col) + (8 - row));
                 } else {
                     statusLabel.setText("Invalid move. Try again.");
                 }
-    
+
                 // Clear selection in either case
                 selectedPiece = null;
                 selectedRow = -1;
@@ -173,5 +192,5 @@ public class Board extends JPanel {
             }
         }
     }
-    
+
 }
