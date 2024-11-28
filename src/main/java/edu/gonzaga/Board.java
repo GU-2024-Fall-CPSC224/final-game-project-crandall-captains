@@ -22,6 +22,7 @@ public class Board extends JPanel {
         statusLabel = new JLabel("Game On", SwingConstants.CENTER);
         buttons = new JButton[8][8];
 
+        // Add components to the board
         add(statusLabel, BorderLayout.NORTH);
         add(createButtonPanel(), BorderLayout.CENTER);
     }
@@ -78,6 +79,23 @@ public class Board extends JPanel {
         }
     }
 
+    public boolean isSquareUnderAttack(int row, int col, boolean isWhite) {
+        // Loop through every square on the board
+        for (int r = 0; r < 8; r++) {
+            for (int c = 0; c < 8; c++) {
+                Piece piece = logicalBoard.getSquare(r, c).getPiece(); // Get the piece at the current square
+                // If there is a piece and it belongs to the opponent
+                if (piece != null && !piece.getColor().equalsIgnoreCase(isWhite ? "White" : "Black")) {
+                    // Check if this piece can move to target square
+                    if (piece.isValidMove(row, col, logicalBoard)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
     private class ButtonClickListener implements ActionListener {
         private final int row;
         private final int col;
@@ -117,7 +135,7 @@ public class Board extends JPanel {
                     statusLabel.setText("Invalid move. Try again.");
                 }
 
-                // Clear selection
+                // Clear selection in either case
                 selectedPiece = null;
             }
         }
