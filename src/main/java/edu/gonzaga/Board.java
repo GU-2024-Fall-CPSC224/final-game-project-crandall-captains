@@ -79,13 +79,13 @@ public class Board extends JPanel {
         }
     }
 
-    public boolean isSquareUnderAttack(int row, int col, boolean isWhite) {
+    public boolean isSquareUnderAttack(int row, int col, String color) {
         // Loop through every square on the board
         for (int r = 0; r < 8; r++) {
             for (int c = 0; c < 8; c++) {
                 Piece piece = logicalBoard.getSquare(r, c).getPiece(); // Get the piece at the current square
                 // If there is a piece and it belongs to the opponent
-                if (piece != null && !piece.getColor().equalsIgnoreCase(isWhite ? "White" : "Black")) {
+                if (piece != null && !piece.getColor().equalsIgnoreCase(color)) {
                     // Check if this piece can move to target square
                     if (piece.isValidMove(row, col, logicalBoard)) {
                         return true;
