@@ -7,17 +7,21 @@ public class Bishop extends Piece {
         super(color, row, col);
     }
 
-    // Implementing the abstract isValidMove method
     @Override
     public boolean isValidMove(int destRow, int destCol, LogBoard board) {
-        // Check if the path is clear
+        // Ensure the move is diagonal
+        if (Math.abs(destRow - getRow()) != Math.abs(destCol - getCol())) {
+            return false; // Not a diagonal move
+        }
+    
+        // Determine the direction of movement
         int rowDirection = (destRow > getRow()) ? 1 : -1;
         int colDirection = (destCol > getCol()) ? 1 : -1;
+    
+        // Check for obstructions along the path
         int currentRow = getRow() + rowDirection;
         int currentCol = getCol() + colDirection;
-    
         while (currentRow != destRow && currentCol != destCol) {
-            // Use getSquare to retrieve the Square, then getPiece
             if (board.getSquare(currentRow, currentCol).getPiece() != null) {
                 return false; // Path is obstructed
             }
@@ -28,7 +32,7 @@ public class Bishop extends Piece {
         // Check the destination square
         Piece destPiece = board.getSquare(destRow, destCol).getPiece();
         return destPiece == null || !destPiece.getColor().equalsIgnoreCase(getColor());
-    }
+    }    
     
     // Implementing the abstract getSymbol method
     @Override

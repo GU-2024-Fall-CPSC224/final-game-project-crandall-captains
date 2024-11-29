@@ -37,15 +37,15 @@ public class King extends Piece {
             }
         }
 
-        /*
-        for (int col = getCol(); col != destCol + direction; col += direction) {
-            if (board.isSquareUnderAttack(getRow(), col, getColor())) {
+        //
+        //for (int col = getCol(); col != destCol + direction; col += direction) {
+            //if (board.isSquareUnderAttack(getRow(), col, getColor())) {
                 return false; // King cannot move through or into an attacked square
-            }
-        }
-        */
+            //}
+        //}
+        
 
-        return true;
+        //return true;
     }
 
     @Override
