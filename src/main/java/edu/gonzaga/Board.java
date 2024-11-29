@@ -123,6 +123,41 @@ public class Board extends JPanel {
             } else {
                 // Attempt to move the selected piece
                 if (selectedPiece.isValidMove(row, col, logicalBoard)) {
+
+                    if(selectedPiece instanceof Pawn && (row == 0 || row == 7)) {
+                        String[] options = {"Queen ", "Rook ", "Bishop", "Knight"};
+                        String choice = (String) JOptionPane.showInputDialog(
+                            null,
+                            "Promote Your Pawn! Choose a Piece:",
+                            "Pawn Promotion",
+                            JOptionPane.QUESTION_MESSAGE,
+                            null,
+                            options,
+                            "Queen"
+                        );
+                        if(choice == null) {
+                            choice = "Queen";
+                        }
+                        Piece promotedPiece;
+                        switch (choice) {
+                            case "Rook":
+                                promotedPiece = new Rook(selectedPiece.getColor(), row, col);
+                                break;
+                            case "Bishop" :
+                                promotedPiece = new Bishop(selectedPiece.getColor(), row, col);
+                                break;
+                            case "Knight" :
+                                promotedPiece = new Knight(selectedPiece.getColor(), row, col);
+                                break;
+                            case "Queen" :
+                            default:
+                                promotedPiece = new Queen(selectedPiece.getColor(), row, col);
+                                break; 
+                        }
+                        logicalBoard.setSquare(row, col, promotedPiece);
+                        logicalBoard.getSquare(selectedRow, selectedCol).setPiece(null);
+                        selectedPiece = promotedPiece;
+                    }
                     // Update LogBoard
                     logicalBoard.getSquare(row, col).setPiece(selectedPiece);
                     logicalBoard.getSquare(selectedRow, selectedCol).setPiece(null);

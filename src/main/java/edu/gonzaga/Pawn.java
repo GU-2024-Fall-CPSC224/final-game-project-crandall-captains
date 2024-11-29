@@ -10,6 +10,10 @@ public class Pawn extends Piece {
     public Pawn(String color, int row, int col) {
         super(color, row, col);
     }
+    public boolean isPromotion(int destRow) {
+        return(getColor().equalsIgnoreCase("White") && destRow ==0) || 
+              (getColor().equalsIgnoreCase("Black") && destRow ==  7);
+    }
 
     @Override
     public boolean isValidMove(int destRow, int destCol, LogBoard board) {
