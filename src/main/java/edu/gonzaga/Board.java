@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Arrays;
 
 public class Board extends JPanel {
 
@@ -125,7 +126,7 @@ public class Board extends JPanel {
                 if (selectedPiece.isValidMove(row, col, logicalBoard)) {
 
                     if(selectedPiece instanceof Pawn && (row == 0 || row == 7)) {
-                        String[] options = {"Queen ", "Rook ", "Bishop", "Knight"};
+                        String[] options = {"Queen ", "Rook", "Bishop", "Knight"};
                         String choice = (String) JOptionPane.showInputDialog(
                             null,
                             "Promote Your Pawn! Choose a Piece:",
@@ -135,11 +136,15 @@ public class Board extends JPanel {
                             options,
                             "Queen"
                         );
-                        if(choice == null) {
+                        if(choice == null || !Arrays.asList(options).contains(choice)) {
                             choice = "Queen";
                         }
                         Piece promotedPiece;
                         switch (choice) {
+                            case "Queen" :
+                            default:
+                                promotedPiece = new Queen(selectedPiece.getColor(), row, col);
+                                break; 
                             case "Rook":
                                 promotedPiece = new Rook(selectedPiece.getColor(), row, col);
                                 break;
@@ -149,12 +154,9 @@ public class Board extends JPanel {
                             case "Knight" :
                                 promotedPiece = new Knight(selectedPiece.getColor(), row, col);
                                 break;
-                            case "Queen" :
-                            default:
-                                promotedPiece = new Queen(selectedPiece.getColor(), row, col);
-                                break; 
+                            
                         }
-                        logicalBoard.setSquare(row, col, promotedPiece);
+                        logicalBoard.getSquare(row, col).setPiece(promotedPiece);
                         logicalBoard.getSquare(selectedRow, selectedCol).setPiece(null);
                         selectedPiece = promotedPiece;
                     }
