@@ -14,13 +14,14 @@ public class Board extends JPanel {
     private Piece selectedPiece = null;
     private int selectedRow = -1;
     private int selectedCol = -1;
+    private boolean isWhiteTurn = true; // True means White's turn, false means Black's turn
 
     public Board() {
         logicalBoard = new LogBoard();
         logicalBoard.setupBoard(); // Initialize logical board with pieces
 
         setLayout(new BorderLayout());
-        statusLabel = new JLabel("Game On", SwingConstants.CENTER);
+        statusLabel = new JLabel("White's turn", SwingConstants.CENTER);
         buttons = new JButton[8][8];
 
         // Add components to the board
@@ -80,23 +81,6 @@ public class Board extends JPanel {
         }
     }
 
-    public boolean isSquareUnderAttack(int row, int col, String color) {
-        // Loop through every square on the board
-        for (int r = 0; r < 8; r++) {
-            for (int c = 0; c < 8; c++) {
-                Piece piece = logicalBoard.getSquare(r, c).getPiece(); // Get the piece at the current square
-                // If there is a piece and it belongs to the opponent
-                if (piece != null && !piece.getColor().equalsIgnoreCase(color)) {
-                    // Check if this piece can move to target square
-                    if (piece.isValidMove(row, col, logicalBoard)) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
     private class ButtonClickListener implements ActionListener {
         private final int row;
         private final int col;
@@ -114,60 +98,68 @@ public class Board extends JPanel {
             if (selectedPiece == null) {
                 // Select a piece
                 if (clickedPiece != null) {
-                    selectedPiece = clickedPiece;
-                    selectedRow = row;
-                    selectedCol = col;
-                    statusLabel.setText("Selected: " + clickedPiece.getSymbol());
+                    if ((isWhiteTurn && clickedPiece.getColor().equalsIgnoreCase("White")) ||
+                        (!isWhiteTurn && clickedPiece.getColor().equalsIgnoreCase("Black"))) {
+                        selectedPiece = clickedPiece;
+                        selectedRow = row;
+                        selectedCol = col;
+                        statusLabel.setText("Selected: " + clickedPiece.getSymbol());
+                    } else {
+                        statusLabel.setText("It's " + (isWhiteTurn ? "White's" : "Black's") + " turn!");
+                    }
                 } else {
                     statusLabel.setText("Empty square selected.");
                 }
             } else {
                 // Attempt to move the selected piece
                 if (selectedPiece.isValidMove(row, col, logicalBoard)) {
-
-                    if(selectedPiece instanceof Pawn && (row == 0 || row == 7)) {
-                        String[] options = {"Queen ", "Rook", "Bishop", "Knight"};
+                    // Handle pawn promotion
+                    if (selectedPiece instanceof Pawn && (row == 0 || row == 7)) {
+                        String[] options = {"Queen", "Rook", "Bishop", "Knight"};
                         String choice = (String) JOptionPane.showInputDialog(
-                            null,
-                            "Promote Your Pawn! Choose a Piece:",
-                            "Pawn Promotion",
-                            JOptionPane.QUESTION_MESSAGE,
-                            null,
-                            options,
-                            "Queen"
+                                null,
+                                "Promote Your Pawn! Choose a Piece:",
+                                "Pawn Promotion",
+                                JOptionPane.QUESTION_MESSAGE,
+                                null,
+                                options,
+                                "Queen"
                         );
-                        if(choice == null || !Arrays.asList(options).contains(choice)) {
+                        if (choice == null || !Arrays.asList(options).contains(choice)) {
                             choice = "Queen";
                         }
                         Piece promotedPiece;
                         switch (choice) {
-                            case "Queen" :
+                            case "Queen":
                             default:
                                 promotedPiece = new Queen(selectedPiece.getColor(), row, col);
-                                break; 
+                                break;
                             case "Rook":
                                 promotedPiece = new Rook(selectedPiece.getColor(), row, col);
                                 break;
-                            case "Bishop" :
+                            case "Bishop":
                                 promotedPiece = new Bishop(selectedPiece.getColor(), row, col);
                                 break;
-                            case "Knight" :
+                            case "Knight":
                                 promotedPiece = new Knight(selectedPiece.getColor(), row, col);
                                 break;
-                            
                         }
                         logicalBoard.getSquare(row, col).setPiece(promotedPiece);
                         logicalBoard.getSquare(selectedRow, selectedCol).setPiece(null);
                         selectedPiece = promotedPiece;
+                    } else {
+                        // Update LogBoard
+                        logicalBoard.getSquare(row, col).setPiece(selectedPiece);
+                        logicalBoard.getSquare(selectedRow, selectedCol).setPiece(null);
+                        selectedPiece.setPosition(row, col);
                     }
-                    // Update LogBoard
-                    logicalBoard.getSquare(row, col).setPiece(selectedPiece);
-                    logicalBoard.getSquare(selectedRow, selectedCol).setPiece(null);
-                    selectedPiece.setPosition(row, col);
 
                     // Update UI
                     updateBoardUI();
-                    statusLabel.setText("Moved to " + (char) ('A' + col) + (8 - row));
+
+                    // Switch turn
+                    isWhiteTurn = !isWhiteTurn;
+                    statusLabel.setText((isWhiteTurn ? "White" : "Black") + "'s turn.");
                 } else {
                     statusLabel.setText("Invalid move. Try again.");
                 }
