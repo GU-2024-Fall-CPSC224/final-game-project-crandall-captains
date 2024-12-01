@@ -111,6 +111,13 @@ public class Board extends JPanel {
                     statusLabel.setText("Empty square selected.");
                 }
             } else {
+                //en passant
+                if(selectedPiece instanceof Pawn && selectedPiece.isValidMove(row, col, logicalBoard)){
+                    if(Math.abs(selectedCol - col) == 1 && logicalBoard.getSquare(row, col).getPiece() == null){
+                        int capturedPawnRow = selectedPiece.getColor().equalsIgnoreCase("White") ? row + 1: row - 1;
+                        logicalBoard.getSquare(capturedPawnRow, col).setPiece(null);
+                    }
+                }
                 // Attempt to move the selected piece
                 if (selectedPiece.isValidMove(row, col, logicalBoard)) {
                     // Handle pawn promotion

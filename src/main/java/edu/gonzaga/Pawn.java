@@ -37,10 +37,24 @@ public class Pawn extends Piece {
         }
 
         // Capture diagonally
-        if (Math.abs(colDiff) == 1 && rowDiff == direction && destPiece != null && !destPiece.getColor().equalsIgnoreCase(getColor())) {
-            return true;
-        }
+        if (Math.abs(colDiff) == 1 && rowDiff == direction) {
 
+            if(destPiece != null && !destPiece.getColor().equalsIgnoreCase(getColor())){
+                return true;
+            }
+            // below is for en passant
+            if(destPiece == null) {
+                Square adjacentSquare = board.getSquare(getRow(), destCol); // Square of potential en passant target
+                Piece adjacentPiece = adjacentSquare.getPiece();
+                if (adjacentPiece instanceof Pawn && !adjacentPiece.getColor().equalsIgnoreCase(getColor())) {
+                    Pawn adjacentPawn = (Pawn) adjacentPiece;
+                    if (board.isLastMoveDoubleStep(adjacentPawn) && destRow == adjacentPawn.getRow() + direction) {
+                        return true; // En passant is valid
+                    }
+                }
+            }
+        
+        }
         return false;
     }
 
