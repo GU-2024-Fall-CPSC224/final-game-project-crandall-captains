@@ -2,6 +2,12 @@ package edu.gonzaga;
 
 public class LogBoard {
     private Square[][] squares;
+    private Piece lastMovedPiece;
+    private int lastMovedFromRow;
+    private int lastMovedFromCol;
+    private int lastMovedToRow;
+    private int lastMovedToCol;
+
 
     public LogBoard() {
         // Initialize an 8x8 board with empty squares
@@ -16,8 +22,30 @@ public class LogBoard {
     public Square getSquare(int row, int col) {
         return squares[row][col];
     }
+    public void recordMove(Piece piece, int fromRow, int fromCol, int toRow, int toCol) {
+        lastMovedPiece = piece;
+        lastMovedFromRow = fromRow;
+        lastMovedFromCol = fromCol;
+        lastMovedToRow = toRow;
+        lastMovedToCol = toCol;
+    }
+    public boolean isLastMoveDoubleStep(Pawn pawn) {
+        // added for en passant
+        if (lastMovedPiece instanceof Pawn &&
+            lastMovedPiece.getColor().equalsIgnoreCase(pawn.getColor()) &&
+            Math.abs(lastMovedFromRow - lastMovedToRow) == 2) {
+            return true;
+        }
+        return false;
+    }
 
     public void setSquare(int row, int col, Piece piece) {
+
+        if(piece !=null && squares[row][col].getPiece() != piece) {
+            // added for en passant
+            recordMove(piece, piece.getRow(), piece.getCol(), row, col);
+            piece.setPosition(row, col);
+        }
         squares[row][col].setPiece(piece);
     }
 
