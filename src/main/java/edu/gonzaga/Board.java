@@ -4,7 +4,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Arrays;
 
 public class Board extends JPanel {
 
@@ -29,7 +28,6 @@ public class Board extends JPanel {
         add(createButtonPanel(), BorderLayout.CENTER);
     }
 
-    // Create the chessboard UI
     private JPanel createButtonPanel() {
         JPanel buttonPanel = new JPanel(new GridLayout(8, 8));
 
@@ -37,19 +35,17 @@ public class Board extends JPanel {
             for (int col = 0; col < 8; col++) {
                 JButton button = new JButton();
 
-                // Set alternating colors for chessboard pattern
                 if ((row + col) % 2 == 0) {
                     button.setBackground(new Color(139, 69, 19)); // Dark brown
                 } else {
                     button.setBackground(new Color(222, 184, 135)); // Light beige
                 }
 
-                // Get the piece from LogBoard for this square
                 Square square = logicalBoard.getSquare(row, col);
                 Piece piece = square.getPiece();
                 if (piece != null) {
-                    button.setText(piece.getSymbol()); // Unicode symbol
-                    button.setFont(new Font("Serif", Font.BOLD, 36)); // Large and bold font
+                    button.setText(piece.getSymbol());
+                    button.setFont(new Font("Serif", Font.BOLD, 36));
                     button.setForeground(piece.getColor().equalsIgnoreCase("White") ? Color.WHITE : Color.BLACK);
                 }
 
@@ -62,7 +58,6 @@ public class Board extends JPanel {
         return buttonPanel;
     }
 
-    // Refresh the board UI after a move
     private void updateBoardUI() {
         for (int row = 0; row < 8; row++) {
             for (int col = 0; col < 8; col++) {
@@ -72,7 +67,7 @@ public class Board extends JPanel {
 
                 if (piece != null) {
                     button.setText(piece.getSymbol());
-                    button.setFont(new Font("Serif", Font.BOLD, 36)); // Reapply font
+                    button.setFont(new Font("Serif", Font.BOLD, 36));
                     button.setForeground(piece.getColor().equalsIgnoreCase("White") ? Color.WHITE : Color.BLACK);
                 } else {
                     button.setText("");
@@ -81,14 +76,14 @@ public class Board extends JPanel {
         }
     }
 
-    // Check if a king of the given color is in check
     private boolean isKingInCheck(String color) {
         int kingRow = -1, kingCol = -1;
 
-        // Find the king
         for (int row = 0; row < 8; row++) {
             for (int col = 0; col < 8; col++) {
                 Square square = logicalBoard.getSquare(row, col);
+                if (square == null) continue; // Skip null squares
+
                 Piece piece = square.getPiece();
                 if (piece instanceof King && piece.getColor().equalsIgnoreCase(color)) {
                     kingRow = row;
@@ -98,10 +93,15 @@ public class Board extends JPanel {
             }
         }
 
-        // Check if any opponent piece can attack the king
+        if (kingRow == -1 || kingCol == -1) {
+            return false; // No king found
+        }
+
         for (int row = 0; row < 8; row++) {
             for (int col = 0; col < 8; col++) {
                 Square square = logicalBoard.getSquare(row, col);
+                if (square == null) continue;
+
                 Piece piece = square.getPiece();
                 if (piece != null && !piece.getColor().equalsIgnoreCase(color)) {
                     if (piece.isValidMove(kingRow, kingCol, logicalBoard)) {
@@ -114,27 +114,92 @@ public class Board extends JPanel {
         return false;
     }
 
-    // Simulate a move and check if it places the king in check
-    private boolean simulateMoveAndCheck(int fromRow, int fromCol, int toRow, int toCol) {
-        // Backup current state
-        Piece originalFromPiece = logicalBoard.getSquare(fromRow, fromCol).getPiece();
-        Piece originalToPiece = logicalBoard.getSquare(toRow, toCol).getPiece();
+    private boolean hasValidMoves(String color) {
+        for (int row = 0; row < 8; row++) {
+            for (int col = 0; col < 8; col++) {
+                Square square = logicalBoard.getSquare(row, col);
+                if (square == null) continue; // Skip null squares
 
-        // Simulate move
-        logicalBoard.getSquare(toRow, toCol).setPiece(originalFromPiece);
-        logicalBoard.getSquare(fromRow, fromCol).setPiece(null);
-        originalFromPiece.setPosition(toRow, toCol);
-
-        boolean isCheck = isKingInCheck(originalFromPiece.getColor());
-
-        // Revert move
-        logicalBoard.getSquare(fromRow, fromCol).setPiece(originalFromPiece);
-        logicalBoard.getSquare(toRow, toCol).setPiece(originalToPiece);
-        originalFromPiece.setPosition(fromRow, fromCol);
-
-        return isCheck;
+                Piece piece = square.getPiece();
+                if (piece != null && piece.getColor().equalsIgnoreCase(color)) {
+                    for (int targetRow = 0; targetRow < 8; targetRow++) {
+                        for (int targetCol = 0; targetCol < 8; targetCol++) {
+                            if (piece.isValidMove(targetRow, targetCol, logicalBoard) &&
+                                logicalBoard.canMoveWithoutLeavingKingInCheck(row, col, targetRow, targetCol, color)) {
+                                return true; // Valid move found
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return false; // No valid moves
     }
 
+    private void checkGameOver() {
+        String currentPlayerColor = isWhiteTurn ? "White" : "Black";
+
+        if (isKingInCheck(currentPlayerColor)) {
+            if (!hasValidMoves(currentPlayerColor)) {
+                showGameOverDialog((isWhiteTurn ? "Black" : "White") + " wins by checkmate!");
+            }
+        } else {
+            if (!hasValidMoves(currentPlayerColor)) {
+                showGameOverDialog("Stalemate! It's a draw.");
+            }
+        }
+    }
+
+    private void showGameOverDialog(String message) {
+        int choice = JOptionPane.showOptionDialog(
+            this,
+            message + "\nWould you like to restart or quit?",
+            "Game Over",
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.QUESTION_MESSAGE,
+            null,
+            new String[]{"Restart", "Quit"},
+            "Restart"
+        );
+
+        if (choice == JOptionPane.YES_OPTION) {
+            restartGame();
+        } else {
+            System.exit(0);
+        }
+    }
+
+    private void restartGame() {
+        // Reset the logical board
+        logicalBoard.setupBoard();
+        
+        // Reset the turn and selection
+        isWhiteTurn = true;
+        selectedPiece = null;
+        selectedRow = -1;
+        selectedCol = -1;
+    
+        // Clear and update the UI to reflect the new board state
+        for (int row = 0; row < 8; row++) {
+            for (int col = 0; col < 8; col++) {
+                JButton button = buttons[row][col];
+                Square square = logicalBoard.getSquare(row, col);
+                Piece piece = square.getPiece();
+    
+                if (piece != null) {
+                    button.setText(piece.getSymbol());
+                    button.setFont(new Font("Serif", Font.BOLD, 36));
+                    button.setForeground(piece.getColor().equalsIgnoreCase("White") ? Color.WHITE : Color.BLACK);
+                } else {
+                    button.setText(""); // Clear the button if no piece exists
+                }
+            }
+        }
+    
+        // Update the status label
+        statusLabel.setText("White's turn");
+    }
+    
     private class ButtonClickListener implements ActionListener {
         private final int row;
         private final int col;
@@ -147,10 +212,11 @@ public class Board extends JPanel {
         @Override
         public void actionPerformed(ActionEvent e) {
             Square clickedSquare = logicalBoard.getSquare(row, col);
+            if (clickedSquare == null) return;
+
             Piece clickedPiece = clickedSquare.getPiece();
 
             if (selectedPiece == null) {
-                // Select a piece
                 if (clickedPiece != null) {
                     if ((isWhiteTurn && clickedPiece.getColor().equalsIgnoreCase("White")) ||
                         (!isWhiteTurn && clickedPiece.getColor().equalsIgnoreCase("Black"))) {
@@ -165,28 +231,27 @@ public class Board extends JPanel {
                     statusLabel.setText("Empty square selected.");
                 }
             } else {
-                // Check if the move is valid
                 if (selectedPiece.isValidMove(row, col, logicalBoard)) {
-                    if (simulateMoveAndCheck(selectedRow, selectedCol, row, col)) {
-                        statusLabel.setText("Invalid move: King would be in check.");
-                    } else {
-                        // Update LogBoard
+                    if (logicalBoard.canMoveWithoutLeavingKingInCheck(selectedRow, selectedCol, row, col, selectedPiece.getColor())) {
                         logicalBoard.getSquare(row, col).setPiece(selectedPiece);
                         logicalBoard.getSquare(selectedRow, selectedCol).setPiece(null);
                         selectedPiece.setPosition(row, col);
 
-                        // Update UI
                         updateBoardUI();
-
-                        // Switch turn
                         isWhiteTurn = !isWhiteTurn;
-                        statusLabel.setText((isWhiteTurn ? "White" : "Black") + "'s turn.");
+                        checkGameOver();
+                        if (!isWhiteTurn) {
+                            statusLabel.setText("Black's turn");
+                        } else {
+                            statusLabel.setText("White's turn");
+                        }
+                    } else {
+                        statusLabel.setText("Invalid move: King would be in check.");
                     }
                 } else {
                     statusLabel.setText("Invalid move. Try again.");
                 }
 
-                // Clear selection
                 selectedPiece = null;
             }
         }

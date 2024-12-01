@@ -8,31 +8,38 @@ public class Bishop extends Piece {
     }
 
     @Override
-    public boolean isValidMove(int destRow, int destCol, LogBoard board) {
-        // Ensure the move is diagonal
-        if (Math.abs(destRow - getRow()) != Math.abs(destCol - getCol())) {
+    public boolean isValidMove(int targetRow, int targetCol, LogBoard board) {
+        Square targetSquare = board.getSquare(targetRow, targetCol);
+        
+        // Check if the target square is valid and not occupied by a same-color piece
+        if (targetSquare == null || (targetSquare.getPiece() != null && targetSquare.getPiece().getColor().equals(this.getColor()))) {
+            return false; // Invalid move
+        }
+    
+        // Diagonal movement validation
+        int rowDiff = Math.abs(this.getRow() - targetRow);
+        int colDiff = Math.abs(this.getCol() - targetCol);
+        if (rowDiff != colDiff) {
             return false; // Not a diagonal move
         }
     
-        // Determine the direction of movement
-        int rowDirection = (destRow > getRow()) ? 1 : -1;
-        int colDirection = (destCol > getCol()) ? 1 : -1;
+        // Check intermediate squares along the diagonal
+        int rowDirection = (targetRow > this.getRow()) ? 1 : -1;
+        int colDirection = (targetCol > this.getCol()) ? 1 : -1;
+        int currentRow = this.getRow() + rowDirection;
+        int currentCol = this.getCol() + colDirection;
     
-        // Check for obstructions along the path
-        int currentRow = getRow() + rowDirection;
-        int currentCol = getCol() + colDirection;
-        while (currentRow != destRow && currentCol != destCol) {
-            if (board.getSquare(currentRow, currentCol).getPiece() != null) {
-                return false; // Path is obstructed
+        while (currentRow != targetRow && currentCol != targetCol) {
+            Square intermediateSquare = board.getSquare(currentRow, currentCol);
+            if (intermediateSquare == null || !intermediateSquare.isEmpty()) {
+                return false; // Path is blocked
             }
             currentRow += rowDirection;
             currentCol += colDirection;
         }
     
-        // Check the destination square
-        Piece destPiece = board.getSquare(destRow, destCol).getPiece();
-        return destPiece == null || !destPiece.getColor().equalsIgnoreCase(getColor());
-    }    
+        return true; // Valid move
+    }     
     
     // Implementing the abstract getSymbol method
     @Override
