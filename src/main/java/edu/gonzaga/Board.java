@@ -81,6 +81,60 @@ public class Board extends JPanel {
         }
     }
 
+    // Check if a king of the given color is in check
+    private boolean isKingInCheck(String color) {
+        int kingRow = -1, kingCol = -1;
+
+        // Find the king
+        for (int row = 0; row < 8; row++) {
+            for (int col = 0; col < 8; col++) {
+                Square square = logicalBoard.getSquare(row, col);
+                Piece piece = square.getPiece();
+                if (piece instanceof King && piece.getColor().equalsIgnoreCase(color)) {
+                    kingRow = row;
+                    kingCol = col;
+                    break;
+                }
+            }
+        }
+
+        // Check if any opponent piece can attack the king
+        for (int row = 0; row < 8; row++) {
+            for (int col = 0; col < 8; col++) {
+                Square square = logicalBoard.getSquare(row, col);
+                Piece piece = square.getPiece();
+                if (piece != null && !piece.getColor().equalsIgnoreCase(color)) {
+                    if (piece.isValidMove(kingRow, kingCol, logicalBoard)) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    // Simulate a move and check if it places the king in check
+    private boolean simulateMoveAndCheck(int fromRow, int fromCol, int toRow, int toCol) {
+        // Backup current state
+        Piece originalFromPiece = logicalBoard.getSquare(fromRow, fromCol).getPiece();
+        Piece originalToPiece = logicalBoard.getSquare(toRow, toCol).getPiece();
+
+        // Simulate move
+        logicalBoard.getSquare(toRow, toCol).setPiece(originalFromPiece);
+        logicalBoard.getSquare(fromRow, fromCol).setPiece(null);
+        originalFromPiece.setPosition(toRow, toCol);
+
+        boolean isCheck = isKingInCheck(originalFromPiece.getColor());
+
+        // Revert move
+        logicalBoard.getSquare(fromRow, fromCol).setPiece(originalFromPiece);
+        logicalBoard.getSquare(toRow, toCol).setPiece(originalToPiece);
+        originalFromPiece.setPosition(fromRow, fromCol);
+
+        return isCheck;
+    }
+
     private class ButtonClickListener implements ActionListener {
         private final int row;
         private final int col;
@@ -111,67 +165,28 @@ public class Board extends JPanel {
                     statusLabel.setText("Empty square selected.");
                 }
             } else {
-                //en passant
-                if(selectedPiece instanceof Pawn && selectedPiece.isValidMove(row, col, logicalBoard)){
-                    if(Math.abs(selectedCol - col) == 1 && logicalBoard.getSquare(row, col).getPiece() == null){
-                        int capturedPawnRow = selectedPiece.getColor().equalsIgnoreCase("White") ? row + 1: row - 1;
-                        logicalBoard.getSquare(capturedPawnRow, col).setPiece(null);
-                    }
-                }
-                // Attempt to move the selected piece
+                // Check if the move is valid
                 if (selectedPiece.isValidMove(row, col, logicalBoard)) {
-                    // Handle pawn promotion
-                    if (selectedPiece instanceof Pawn && (row == 0 || row == 7)) {
-                        String[] options = {"Queen", "Rook", "Bishop", "Knight"};
-                        String choice = (String) JOptionPane.showInputDialog(
-                                null,
-                                "Promote Your Pawn! Choose a Piece:",
-                                "Pawn Promotion",
-                                JOptionPane.QUESTION_MESSAGE,
-                                null,
-                                options,
-                                "Queen"
-                        );
-                        if (choice == null || !Arrays.asList(options).contains(choice)) {
-                            choice = "Queen";
-                        }
-                        Piece promotedPiece;
-                        switch (choice) {
-                            case "Queen":
-                            default:
-                                promotedPiece = new Queen(selectedPiece.getColor(), row, col);
-                                break;
-                            case "Rook":
-                                promotedPiece = new Rook(selectedPiece.getColor(), row, col);
-                                break;
-                            case "Bishop":
-                                promotedPiece = new Bishop(selectedPiece.getColor(), row, col);
-                                break;
-                            case "Knight":
-                                promotedPiece = new Knight(selectedPiece.getColor(), row, col);
-                                break;
-                        }
-                        logicalBoard.getSquare(row, col).setPiece(promotedPiece);
-                        logicalBoard.getSquare(selectedRow, selectedCol).setPiece(null);
-                        selectedPiece = promotedPiece;
+                    if (simulateMoveAndCheck(selectedRow, selectedCol, row, col)) {
+                        statusLabel.setText("Invalid move: King would be in check.");
                     } else {
                         // Update LogBoard
                         logicalBoard.getSquare(row, col).setPiece(selectedPiece);
                         logicalBoard.getSquare(selectedRow, selectedCol).setPiece(null);
                         selectedPiece.setPosition(row, col);
+
+                        // Update UI
+                        updateBoardUI();
+
+                        // Switch turn
+                        isWhiteTurn = !isWhiteTurn;
+                        statusLabel.setText((isWhiteTurn ? "White" : "Black") + "'s turn.");
                     }
-
-                    // Update UI
-                    updateBoardUI();
-
-                    // Switch turn
-                    isWhiteTurn = !isWhiteTurn;
-                    statusLabel.setText((isWhiteTurn ? "White" : "Black") + "'s turn.");
                 } else {
                     statusLabel.setText("Invalid move. Try again.");
                 }
 
-                // Clear selection in either case
+                // Clear selection
                 selectedPiece = null;
             }
         }
