@@ -37,15 +37,14 @@ public class King extends Piece {
             }
         }
 
-        //
-        //for (int col = getCol(); col != destCol + direction; col += direction) {
-            //if (board.isSquareUnderAttack(getRow(), col, getColor())) {
+        // Ensure King does not move through or into a square under attack
+        for (int col = getCol(); col != destCol + direction; col += direction) {
+            if (board.isSquareUnderAttack(getRow(), col, getColor())) {
                 return false; // King cannot move through or into an attacked square
-            //}
-        //}
-        
+            }
+        }
 
-        //return true;
+        return true;
     }
 
     @Override
@@ -56,7 +55,11 @@ public class King extends Piece {
         // King moves one square in any direction
         Piece destPiece = board.getSquare(destRow, destCol).getPiece();
         if (rowDiff <= 1 && colDiff <= 1) {
-            return (destPiece == null || !destPiece.getColor().equalsIgnoreCase(getColor()));
+            // Check if the move puts the King in check
+            if (board.canMoveWithoutLeavingKingInCheck(getRow(), getCol(), destRow, destCol, getColor())) {
+                return (destPiece == null || !destPiece.getColor().equalsIgnoreCase(getColor()));
+            }
+            return false;
         }
 
         // Check for castling move

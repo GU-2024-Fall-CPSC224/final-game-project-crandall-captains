@@ -66,9 +66,9 @@ public class LogBoard {
             for (int col = 0; col < 8; col++) {
                 Piece piece = getSquare(row, col).getPiece();
                 if (piece instanceof King && piece.getColor().equalsIgnoreCase(color)) {
-                    System.out.println("King found at: (" + row + ", " + col + ")");
+                    //System.out.println("King found at: (" + row + ", " + col + ")");
                     boolean underAttack = isSquareUnderAttack(row, col, color);
-                    System.out.println("King under attack: " + underAttack);
+                    //System.out.println("King under attack: " + underAttack);
                     return underAttack;
                 }
             }
@@ -77,14 +77,14 @@ public class LogBoard {
     }
 
     public boolean isSquareUnderAttack(int row, int col, String color) {
-        System.out.println("Checking if square (" + row + ", " + col + ") is under attack by opponent of color: " + color);
+        //System.out.println("Checking if square (" + row + ", " + col + ") is under attack by opponent of color: " + color);
         for (int r = 0; r < 8; r++) {
             for (int c = 0; c < 8; c++) {
                 Piece piece = getSquare(r, c).getPiece();
                 if (piece != null && !piece.getColor().equalsIgnoreCase(color)) {
-                    System.out.println("Checking piece at (" + r + ", " + c + "): " + piece.getClass().getSimpleName());
+                    //System.out.println("Checking piece at (" + r + ", " + c + "): " + piece.getClass().getSimpleName());
                     boolean canAttack = piece.isValidMove(row, col, this);
-                    System.out.println("Piece " + piece.getClass().getSimpleName() + " at (" + r + ", " + c + ") can attack: " + canAttack);
+                    //System.out.println("Piece " + piece.getClass().getSimpleName() + " at (" + r + ", " + c + ") can attack: " + canAttack);
                     if (canAttack) {
                         return true;
                     }
