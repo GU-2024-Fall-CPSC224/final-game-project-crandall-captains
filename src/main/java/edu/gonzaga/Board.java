@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Arrays;
 
 public class Board extends JPanel {
 
@@ -199,61 +200,111 @@ public class Board extends JPanel {
         // Update the status label
         statusLabel.setText("White's turn");
     }
-    
-    private class ButtonClickListener implements ActionListener {
-        private final int row;
-        private final int col;
 
-        public ButtonClickListener(int row, int col) {
-            this.row = row;
-            this.col = col;
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            Square clickedSquare = logicalBoard.getSquare(row, col);
-            if (clickedSquare == null) return;
-
-            Piece clickedPiece = clickedSquare.getPiece();
-
-            if (selectedPiece == null) {
-                if (clickedPiece != null) {
-                    if ((isWhiteTurn && clickedPiece.getColor().equalsIgnoreCase("White")) ||
-                        (!isWhiteTurn && clickedPiece.getColor().equalsIgnoreCase("Black"))) {
-                        selectedPiece = clickedPiece;
-                        selectedRow = row;
-                        selectedCol = col;
-                        statusLabel.setText("Selected: " + clickedPiece.getSymbol());
-                    } else {
-                        statusLabel.setText("It's " + (isWhiteTurn ? "White's" : "Black's") + " turn!");
-                    }
-                } else {
-                    statusLabel.setText("Empty square selected.");
-                }
-            } else {
-                if (selectedPiece.isValidMove(row, col, logicalBoard)) {
-                    if (logicalBoard.canMoveWithoutLeavingKingInCheck(selectedRow, selectedCol, row, col, selectedPiece.getColor())) {
-                        logicalBoard.getSquare(row, col).setPiece(selectedPiece);
-                        logicalBoard.getSquare(selectedRow, selectedCol).setPiece(null);
-                        selectedPiece.setPosition(row, col);
-
-                        updateBoardUI();
-                        isWhiteTurn = !isWhiteTurn;
-                        checkGameOver();
-                        if (!isWhiteTurn) {
-                            statusLabel.setText("Black's turn");
+        private class ButtonClickListener implements ActionListener {
+            private final int row;
+            private final int col;
+        
+            public ButtonClickListener(int row, int col) {
+                this.row = row;
+                this.col = col;
+            }
+        
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Square clickedSquare = logicalBoard.getSquare(row, col);
+                if (clickedSquare == null) return;
+        
+                Piece clickedPiece = clickedSquare.getPiece();
+        
+                // Handle piece selection
+                if (selectedPiece == null) {
+                    if (clickedPiece != null) {
+                        if ((isWhiteTurn && clickedPiece.getColor().equalsIgnoreCase("White")) ||
+                            (!isWhiteTurn && clickedPiece.getColor().equalsIgnoreCase("Black"))) {
+                            selectedPiece = clickedPiece;
+                            selectedRow = row;
+                            selectedCol = col;
+                            statusLabel.setText("Selected: " + clickedPiece.getSymbol());
                         } else {
-                            statusLabel.setText("White's turn");
+                            statusLabel.setText("It's " + (isWhiteTurn ? "White's" : "Black's") + " turn!");
                         }
                     } else {
-                        statusLabel.setText("Invalid move: King would be in check.");
+                        statusLabel.setText("Empty square selected.");
                     }
                 } else {
-                    statusLabel.setText("Invalid move. Try again.");
+                    // Handle movement
+                    if (selectedPiece.isValidMove(row, col, logicalBoard)) {
+                        if (logicalBoard.canMoveWithoutLeavingKingInCheck(selectedRow, selectedCol, row, col, selectedPiece.getColor())) {
+                            // En passant logic
+                            if (selectedPiece instanceof Pawn && selectedPiece.isValidMove(row, col, logicalBoard)) {
+                                if (Math.abs(selectedCol - col) == 1 && logicalBoard.getSquare(row, col).getPiece() == null) {
+                                    int capturedPawnRow = selectedPiece.getColor().equalsIgnoreCase("White") ? row + 1 : row - 1;
+                                    logicalBoard.getSquare(capturedPawnRow, col).setPiece(null);
+                                }
+                            }
+        
+                            // Handle pawn promotion
+                            if (selectedPiece instanceof Pawn && (row == 0 || row == 7)) {
+                                promotePawn(row, col);
+                            } else {
+                                // Update LogBoard for regular moves
+                                logicalBoard.getSquare(row, col).setPiece(selectedPiece);
+                                logicalBoard.getSquare(selectedRow, selectedCol).setPiece(null);
+                                selectedPiece.setPosition(row, col);
+                            }
+        
+                            updateBoardUI();
+                            isWhiteTurn = !isWhiteTurn;
+                            checkGameOver();
+                            statusLabel.setText((isWhiteTurn ? "White's" : "Black's") + " turn");
+                        } else {
+                            statusLabel.setText("Invalid move: King would be in check.");
+                        }
+                    } else {
+                        statusLabel.setText("Invalid move. Try again.");
+                    }
+                    selectedPiece = null; // Reset selection
                 }
-
-                selectedPiece = null;
+            }
+        
+            private void promotePawn(int row, int col) {
+                String[] options = {"Queen", "Rook", "Bishop", "Knight"};
+                String choice = (String) JOptionPane.showInputDialog(
+                        null,
+                        "Promote Your Pawn! Choose a Piece:",
+                        "Pawn Promotion",
+                        JOptionPane.QUESTION_MESSAGE,
+                        null,
+                        options,
+                        "Queen"
+                );
+                if (choice == null || !Arrays.asList(options).contains(choice)) {
+                    choice = "Queen";
+                }
+                Piece promotedPiece;
+                switch (choice) {
+                    case "Queen":
+                    default:
+                        promotedPiece = new Queen(selectedPiece.getColor(), row, col);
+                        break;
+                    case "Rook":
+                        promotedPiece = new Rook(selectedPiece.getColor(), row, col);
+                        break;
+                    case "Bishop":
+                        promotedPiece = new Bishop(selectedPiece.getColor(), row, col);
+                        break;
+                    case "Knight":
+                        promotedPiece = new Knight(selectedPiece.getColor(), row, col);
+                        break;
+                }
+                logicalBoard.getSquare(row, col).setPiece(promotedPiece);
+                logicalBoard.getSquare(selectedRow, selectedCol).setPiece(null);
             }
         }
+        
     }
-}
+
+
+
+
