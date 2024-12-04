@@ -253,7 +253,7 @@ public class Board extends JPanel {
                                 logicalBoard.getSquare(selectedRow, selectedCol).setPiece(null);
                                 selectedPiece.setPosition(row, col);
                             }
-        
+                            selectedPiece.setHasMoved();
                             updateBoardUI();
                             isWhiteTurn = !isWhiteTurn;
                             checkGameOver();

@@ -1,7 +1,5 @@
 package edu.gonzaga;
 
-import javax.swing.*;
-
 public abstract class Piece {
     private String color; // Piece color (White or Black)
     private int row;      // Row position
@@ -32,6 +30,10 @@ public abstract class Piece {
     public void setPosition(int row, int col) {
         this.row = row;
         this.col = col;
+        //this.hasMoved = true;
+    }
+
+    public void setHasMoved() {
         this.hasMoved = true;
     }
 

@@ -7,45 +7,55 @@ public class King extends Piece {
     }
 
     private boolean isCastlingMove(int destRow, int destCol, LogBoard board) {
+        //System.out.println("Checks begin");
+        // King must remain in the same row
         if (destRow != getRow()) {
+            //System.out.println("destRow != getRow");
             return false;
         }
-
+    
         int colDiff = destCol - getCol();
-        // Castling requires moving two squares horizontally
+        // Castling requires moving exactly two squares horizontally
         if (Math.abs(colDiff) != 2) {
+            //System.out.println("Math.abs(colDiff) != 2");
             return false;
         }
-
-        // Can't castle if the King has already moved
+    
+        // King must not have moved previously
         if (this.getHasMoved()) {
+            //System.out.println("KingHasMoved");
             return false;
-        }
-
-        int rookCol = (colDiff > 0) ? 7 : 0; // Rook is either on the leftmost or rightmost
+        } 
+    
+        // Determine the Rook's column based on direction
+        int rookCol = (colDiff > 0) ? 7 : 0;
         Piece rook = board.getSquare(getRow(), rookCol).getPiece();
-        // Validate the rook for castling
-        if (rook == null || !(rook instanceof Rook) || rook.getHasMoved()) {
+    
+        // Validate the Rook
+        if (rook == null || !(rook instanceof Rook) || rook.getHasMoved() || !rook.getColor().equals(this.getColor())) {
+            //System.out.println("Rook not valid");
             return false;
-        }
-
-        // Check that all squares between the King and the Rook are empty
+        } 
+    
+        // Ensure all squares between the King and Rook are empty
         int direction = colDiff > 0 ? 1 : -1;
         for (int col = getCol() + direction; col != rookCol; col += direction) {
             if (board.getSquare(getRow(), col).getPiece() != null) {
-                return false; 
+                //System.out.println("Squares not empty");
+                return false;
             }
         }
-
+    
         // Ensure King does not move through or into a square under attack
         for (int col = getCol(); col != destCol + direction; col += direction) {
             if (board.isSquareUnderAttack(getRow(), col, getColor())) {
-                return false; // King cannot move through or into an attacked square
+                //System.out.println("Moving into square under attack");
+                return false;
             }
         }
-
+    
         return true;
-    }
+    }    
 
     @Override
     public boolean isValidMove(int destRow, int destCol, LogBoard board) {
@@ -75,7 +85,11 @@ public class King extends Piece {
                 board.getSquare(getRow(), rookNewCol).setPiece(rook); // Place the rook next to the King
                 rook.setPosition(getRow(), rookNewCol); // Update the rook's internal position
             }
+
+            //System.out.println("Castling move true");
             return true;
+        } else {
+            //System.out.println("Castling move false");
         }
 
         return false; // Any other move is invalid

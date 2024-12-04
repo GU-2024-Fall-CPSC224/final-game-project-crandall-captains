@@ -4,9 +4,7 @@ public class LogBoard {
     private Square[][] squares;
     private Piece lastMovedPiece;
     private int lastMovedFromRow;
-    private int lastMovedFromCol;
     private int lastMovedToRow;
-    private int lastMovedToCol;
 
     public LogBoard() {
         // Initialize an 8x8 board with empty squares
@@ -28,9 +26,7 @@ public class LogBoard {
     public void recordMove(Piece piece, int fromRow, int fromCol, int toRow, int toCol) {
         lastMovedPiece = piece;
         lastMovedFromRow = fromRow;
-        lastMovedFromCol = fromCol;
         lastMovedToRow = toRow;
-        lastMovedToCol = toCol;
     }
 
     public boolean isLastMoveDoubleStep(Pawn pawn) {
